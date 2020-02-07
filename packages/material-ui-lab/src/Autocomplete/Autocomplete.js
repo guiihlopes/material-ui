@@ -288,6 +288,7 @@ const Autocomplete = React.forwardRef(function Autocomplete(props, ref) {
     selectOnFocus = !props.freeSolo,
     size = 'medium',
     value: valueProp,
+    loadedOptions,
     ...other
   } = props;
   /* eslint-enable no-unused-vars */
@@ -638,6 +639,11 @@ Autocomplete.propTypes = {
    * Props applied to the Listbox element.
    */
   ListboxProps: PropTypes.object,
+  /**
+   * This prop is used to tell when options are firstly loaded when using async.
+   * If you don't provide this prop. It won't display the correct label if has defaultValue.
+   */
+  loadedOptions: PropTypes.bool,
   /**
    * If `true`, the component is in a loading state.
    */

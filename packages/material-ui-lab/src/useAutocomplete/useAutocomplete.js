@@ -1,7 +1,6 @@
 /* eslint-disable no-constant-condition */
 import React from 'react';
 import PropTypes from 'prop-types';
-import difference from 'lodash/difference';
 import { setRef, useEventCallback, useControlled, usePrevious } from '@material-ui/core/utils';
 
 // https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
@@ -113,9 +112,8 @@ export default function useAutocomplete(props) {
     selectOnFocus = !props.freeSolo,
     value: valueProp,
     componentName = 'useAutocomplete',
+    loadedOptions = false,
   } = props;
-
-  const previousOptions = usePrevious(options);
 
   const [defaultId, setDefaultId] = React.useState();
   const id = idProp || defaultId;
@@ -207,20 +205,14 @@ export default function useAutocomplete(props) {
 
   const [focused, setFocused] = React.useState(false);
 
-  const resetInputValue = useEventCallback((event, newValue, firstRender = false) => {
+  const resetInputValue = useEventCallback((event, newValue) => {
     let newInputValue;
     if (multiple) {
       newInputValue = '';
     } else if (newValue == null) {
       newInputValue = '';
     } else {
-      let selectedOption;
-      if (firstRender) {
-        selectedOption = options.find(option => getOptionSelected(option, newValue));
-        setValue(selectedOption);
-      }
-      const searchValue = selectedOption || newValue;
-      const optionLabel = getOptionLabel(searchValue);
+      const optionLabel = getOptionLabel(newValue);
 
       if (process.env.NODE_ENV !== 'production') {
         if (typeof optionLabel !== 'string') {
@@ -251,13 +243,25 @@ export default function useAutocomplete(props) {
   });
 
   React.useEffect(() => {
-    const firstRender = typeof value === 'string';
-    const optionDifference = difference(options, previousOptions);
-    if (!(firstRender && optionDifference.length)) return undefined;
-    resetInputValue(null, value, firstRender);
-    return undefined;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, resetInputValue, options]);
+    resetInputValue(null, value);
+  }, [value, resetInputValue]);
+
+  const previousLoadedOptions = usePrevious(loadedOptions);
+  React.useEffect(() => {
+    if (defaultValue && !focused && !previousLoadedOptions && loadedOptions) {
+      // firstRender after load options
+      const selectedOption = options.find(option => getOptionSelected(option, defaultValue));
+      resetInputValue(null, selectedOption);
+    }
+  }, [
+    loadedOptions,
+    getOptionSelected,
+    options,
+    focused,
+    previousLoadedOptions,
+    defaultValue,
+    resetInputValue,
+  ]);
 
   const { current: isOpenControlled } = React.useRef(openProp != null);
   const [openState, setOpenState] = React.useState(false);
@@ -1013,6 +1017,11 @@ useAutocomplete.propTypes = {
    * If `true`, the highlight can move to the input.
    */
   includeInputInList: PropTypes.bool,
+  /**
+   * This prop is used to tell when options are firstly loaded when using async.
+   * If you don't provide this prop. It won't display the correct label if has defaultValue.
+   */
+  loadedOptions: PropTypes.bool,
   /**
    * If `true`, `value` must be an array and the menu will support multiple selections.
    */

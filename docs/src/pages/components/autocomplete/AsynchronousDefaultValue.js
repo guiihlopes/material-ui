@@ -13,9 +13,9 @@ function sleep(delay = 0) {
 
 export default function AsynchronousDefaultValue() {
   const [open, setOpen] = React.useState(false);
+  const [loadedOptions, setLoadedOptions] = React.useState(false);
   const [options, setOptions] = React.useState([]);
   const loading = open && options.length === 0;
-
   const defaultValue = 'PT';
 
   React.useEffect(() => {
@@ -32,6 +32,7 @@ export default function AsynchronousDefaultValue() {
 
       if (active) {
         setOptions(Object.keys(countries).map(key => countries[key].item[0]));
+        if (!loadedOptions) setLoadedOptions(true);
       }
     })();
 
@@ -51,6 +52,7 @@ export default function AsynchronousDefaultValue() {
       id="asynchronous-demo"
       style={{ width: 300 }}
       open={open}
+      loadedOptions={loadedOptions}
       defaultValue={defaultValue}
       onOpen={() => {
         setOpen(true);
