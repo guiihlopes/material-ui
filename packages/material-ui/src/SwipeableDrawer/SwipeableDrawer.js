@@ -115,8 +115,8 @@ function findNativeHandler({ domTreeShapes, start, current, anchor }) {
   });
 }
 
-const disableSwipeToOpenDefault =
-  typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+
 const transitionDurationDefault = { enter: duration.enteringScreen, exit: duration.leavingScreen };
 
 const useEnhancedEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
@@ -126,7 +126,7 @@ const SwipeableDrawer = React.forwardRef(function SwipeableDrawer(props, ref) {
     anchor = 'left',
     disableBackdropTransition = false,
     disableDiscovery = false,
-    disableSwipeToOpen = disableSwipeToOpenDefault,
+    disableSwipeToOpen = iOS,
     hideBackdrop,
     hysteresis = 0.52,
     minFlingVelocity = 450,

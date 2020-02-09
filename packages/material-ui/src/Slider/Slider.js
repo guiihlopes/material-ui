@@ -125,6 +125,8 @@ const axisProps = {
 
 const Identity = x => x;
 
+const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+
 export const styles = theme => ({
   /* Styles applied to the root element. */
   root: {
@@ -135,6 +137,7 @@ export const styles = theme => ({
     display: 'inline-block',
     position: 'relative',
     cursor: 'pointer',
+    // Disable scroll capabilities.
     touchAction: 'none',
     color: theme.palette.primary.main,
     WebkitTapHighlightColor: 'transparent',
@@ -603,8 +606,10 @@ const Slider = React.forwardRef(function Slider(props, ref) {
   });
 
   const handleTouchStart = useEventCallback(event => {
-    // Workaround as Safari has partial support for touchAction: 'none'.
-    event.preventDefault();
+    if (event.cancelable) {
+      // Workaround as Safari has partial support for touchAction: 'none'.
+      event.preventDefault();
+    }
     const touch = event.changedTouches[0];
     if (touch != null) {
       // A number that uniquely identifies the current finger in the touch session.
@@ -627,7 +632,12 @@ const Slider = React.forwardRef(function Slider(props, ref) {
 
   React.useEffect(() => {
     const { current: slider } = sliderRef;
-    slider.addEventListener('touchstart', handleTouchStart);
+    // TODO: replace with a synthetic event, like onMouseDown.
+    // https://caniuse.com/#search=touch-action
+    slider.addEventListener('touchstart', handleTouchStart, {
+      // Workaround as Safari has partial support for touchAction: 'none'.
+      passive: !iOS,
+    });
     const doc = ownerDocument(slider);
 
     return () => {
